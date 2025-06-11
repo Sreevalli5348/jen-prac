@@ -161,3 +161,13 @@ Access Tomcat Web Interface
 http://server_ip:8080/
 
 You should see Tomcat welcome page.
+
+
+in jenkins server install plugins maven, deploy to container, github integration 
+in jenkins server 
+yum install maven
+mvn -v
+path has to add  into jenkins tools java and maven paths
+in build configure section post-build actions Deploy war/ear to a container  
+**/*.war 
+context - /
