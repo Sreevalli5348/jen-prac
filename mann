@@ -107,7 +107,7 @@ resource "aws_vpc_security_group_egress_rule" "allow_all_traffic_ipv4" {
   cidr_ipv4         = "0.0.0.0/0"
   ip_protocol       = "-1"
 }
-###################################################################################################
+################################################################################################### VPC ##################
 provider "aws" {
   region = "us-east-1"
 
@@ -263,3 +263,29 @@ resource "aws_route_table_association" "private-asso" {
   subnet_id      = aws_subnet.private-subnet.id
   route_table_id = aws_route_table.private-rt.id
 }                                                                                                                                                                                                     
+#########################################################################################################################
+INJECT
+
+data "aws_security_group" "previous-sg" {
+  id = "sg-0f463e75be16d4c3a"
+}
+
+resource "aws_instance" "web-access" {
+  ami               = "ami-05ffe3c48a9991133"
+  instance_type     = "t2.micro"
+  key_name          = "lti-mahape-key"
+  availability_zone = "us-east-1a"
+  vpc_security_group_ids = [data.aws_security_group.previous-sg.id]
+
+  user_data = <<-EOF
+        #!/bin/bash
+        sudo yum install httpd -y
+        sudo systemctl start httpd
+        sudo systemctl enable httpd
+        echo "<h1>sample webserver using terraform</h1>" | sudo tee /var/www/html/index.html
+  EOF
+
+  tags = {
+    Name = "HelloWorld"
+  }
+}
