@@ -1,0 +1,27 @@
+docker run -d --name my-cont -p 8080:80 nginx
+docker exec -it my-cont bash
+cd usr
+cd share
+cd nginx
+cd html
+cat index.html
+echo "hiii this is container" >index.html
+cat index.html
+#########################################################################################3
+
+- name : this is installing httpd
+  hosts : all
+  tasks :
+    - name : installing apache
+      yum :
+        name : httpd
+        state : present
+    - name : copying httpd
+      copy :
+        src : sri.html
+        dest : /var/www/html/sri.html
+    - name : start httpd
+      systemd :
+        name : httpd
+        state : started
+        enabled : true
