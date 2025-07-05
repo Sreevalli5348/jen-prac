@@ -63,6 +63,7 @@ spec:
       port: 80
       targetPort: 80
   type: LoadBalancer
-#####################################################################################
+##################################################################################### CLUSTER CREATION
 eksctl create cluster --name prumile-cluster --region us-east-1 --nodegroup-name prumile-nodes --node-type t2.small --nodes 3 --nodes-min 2 --nodes-max 4 --ssh-access --ssh-public-key .ssh/id_rsa.pub
-
+##################################################################################### CLUSTER DELETION
+eksctl delete cluster --name my-cluster
