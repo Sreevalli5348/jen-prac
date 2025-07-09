@@ -1,0 +1,227 @@
+---------------------Host eks cluster and deploy nginx--------------
+-create create by following the below commands 
+create iam role and attach policy
+ ECRfull access,EKSpolicy and IAM full access
+ apt-get update -y
+ apt install unzip -y
+ curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+ unzip awscliv2.zip
+ sudo ./aws/install
+ aws configure
+ Install EKS Tool
+ curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
+ sudo mv /tmp/eksctl /usr/local/bin
+ eksctl version
+ Install Kubectl
+ curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
+ sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl 
+ kubectl version --client
+ SSh-keygen
+ Create EKS Cluster
+ eksctl create cluster --name my-cluster --region region-code --version 1.32 --vpc-public-subnets subnet-ExampleID1,subnet-ExampleID2 --without-nodegroup
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-create node group
+eksctl create nodegroup \
+  --cluster my-cluster \
+  --region us-east-2 \
+  --name my-node-group \
+  --node-ami-family Ubuntu2204 \
+  --node-type t2.small \
+  --subnet-ids subnet-086ced1a84c94a342,subnet-01695faa5e0e61d97 \
+  --nodes 3 \
+  --nodes-min 2 \
+  --nodes-max 4 \
+  --ssh-access \
+  --ssh-public-key /root/.ssh/id_rsa.pub
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+#kubectl get nodes
+#kubectl get nodes
+#mkdir nginx-project
+#cd nginx-project
+#vim pod.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx
+spec:
+  containers:
+  - name: nginx
+    image: nginx:1.14.2
+    ports:
+    - containerPort: 80
+#kubectl create -f pod.yaml
+#kubectl get pods
+#vim deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  labels:
+    app: nginx
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.14.2
+        ports:
+        - containerPort: 80
+   25  kubectl apply -f deployment.yaml
+   26  kubectl get pods
+   27  vim service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: nginx
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+   30  kubectl apply -f service.yaml
+   31  kubectl get svc -> copy the external ip with port 80 in the browser.
+-------------------------------------------------------------------------------------------------------------------------------------------------------------
+to delete cluster :- eksctl delete cluster --name my-cluster
+-----------------------------------------------------------------------------------------------------------------------------
+----Cluster creating using kops--------
+Create an instance :- ubuntu -22.04 , t2.medium , size:-15 . sg :- kube-sg
+-Install awscli
+  apt install unzip -y
+  curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+  unzip awscliv2.zip
+  sudo ./aws/install
+  aws configure
+-Install kubectl
+  curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+  sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+  kubectl version --client
+-Install kops
+  curl -Lo kops https://github.com/kubernetes/kops/releases/download/$(curl -s https://api.github.com/repos/kubernetes/kops/releases/latest | grep tag_name | cut -d '"' -f 4)/kops-linux-amd64
+  chmod +x ./kops
+  sudo mv ./kops /usr/local/bin/
+  kops version
+Create an IAM user/role with Route53, EC2, IAM and S3 full access
+Attach IAM role to ubuntu server :- Instance -> actions -> security -> modify iam -> attach role
+Create a Route53 private hosted zone :- route53 -> create hosted zone 
+Domanin Name :- some_name.in
+Type :- private hosted zone
+Region :- us-east-1
+vpc id :- default
+Create hosted zone
+Create s3 bucket using command line
+  aws s3 mb s3://dev.k8s.mansi-kops-2610.sreeja.in [change name before creating:- name should be like bucket_name.dns_name(route53 zone)]
+To check 
+  aws s3 ls
+  export KOPS_STATE_STORE=s3://dev.k8s.mansi-kops-2610.sreeja.in
+generate ssh-key:-
+  ssh-keygen
+create cluster                                                  
+  kops create cluster --cloud=aws --zones=us-east-1a --name=dev.k8s.mansi-kops-2610.sreeja.in --dns-zone=sreeja.in --dns private
+  kops update cluster --name dev.k8s.mansi-kops-2610.sreeja.in --yes --admin
+  kops validate cluster  (it takes some time to be active dont worry)
+  kubectl get nodes
+----Deploying Nginx container on Kubernetes--------
+ kubectl create deployment sample-nginx --image=nginx
+   kubectl scale deployment sample-nginx --replicas=2
+   kubectl get pods
+   kubectl expose deployment sample-nginx --port=80 --target-port=80 --type=LoadBalancer
+   kubectl get svc
+-----Deleting cluster ---------
+kops delete cluster dev.k8s.sanjayskv.in --yes
+----------------------------------------------------------------------------------------------------------------------
+------eks Qos---------------------
+create eks cluster 
+create iam role and attach policy
+ECRfull access,EKSpolicy and IAM full access
+apt-get update -y
+apt install unzip -y
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+unzip awscliv2.zip
+sudo ./aws/install
+aws configure
+Install EKS Tool
+curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
+sudo mv /tmp/eksctl /usr/local/bin
+eksctl version
+Install Kubectl
+curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
+sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl 
+kubectl version --client
+SSh-keygen
+Create EKS Cluster
+eksctl create cluster --name milestone-2 --region us-east-1 --version 1.32 --node-type t2.small --nodes 3 --nodes-min 2 --nodes-max 4 --ssh-access --ssh-public-key /root/.ssh/id_rsa.pub
+-brustable Qos
+   #vim brustable.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: deepak-app
+  namespace: default
+  labels:
+   app: deepak-app
+spec:
+  containers:
+    - name: web-app
+      image: nginx
+      resources:
+        limits:
+          memory: "250Mi"
+        requests:
+          memory: "150Mi"
+#kubectl apply -f brustable.yaml
+#kubectl get pods
+# kubectl describe pod deepak-app [check for qos class]
+-----------------------------------------------------------------------------------------------------------------------------
+-besteffort qos
+#vim besteffort.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: deepak1-app
+  namespace: default
+  labels:
+   app: deepak1-app
+spec:
+  containers:
+    - name: web-app
+      image: nginx
+#kubectl apply -f besteffort.yaml
+#kubectl get pods
+#kubectl describe pod deepak1-app
+------------------------------------------------------------------------------------------------------------------------------------
+-guranteed qos
+vim guranteed.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: deepak2-app
+  namespace: default
+  labels:
+   app: deepak2-app
+spec:
+  containers:
+    - name: web-app
+      image: nginx
+      resources:
+        limits:
+          memory: "250Mi"
+          cpu: "400m"
+        requests:
+          memory: "250Mi"
+          cpu: "400m"
+#kubectl apply -f gauranteed.yaml
+#kubectl get pods
+#kubectl describe pod deepak2-app
+-----------------------------------
