@@ -242,3 +242,29 @@ rpmquery httpd
 systemctl status httpd
 cd /tmp
 ll  -> fstab should be visible 
+###############################################################
+---
+- name: create multiple users
+  hosts: all
+  tasks:
+    - name: create multiple users
+      user:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - sanjaya
+        - drcula
+        - iraonman
+#############################################################
+---
+- name: copied files
+  hosts: all
+  tasks:
+    - name: copied multiple files
+      copy:
+        src: "{{ item }}"
+        dest: /tmp
+      loop:
+        - /etc/passwd
+        - /etc/fstab
+        - /etc/gshadow
