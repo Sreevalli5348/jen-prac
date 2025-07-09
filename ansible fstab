@@ -1,3 +1,13 @@
+create 3 instances 
+and provide connection between it by making the entry of hostname and ip in /etc/hosts file
+generate ssh key and copy to the target machine under authorized keys
+install ansible on controller machine
+make the entry in /etc/ansible
+[dev-servers]
+ansible-target
+[prod-servers]
+ansible-target2
+
        ip a s
     2  vim /etc/hosts
     3  cd /etc/ansible
