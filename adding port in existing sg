@@ -1,0 +1,29 @@
+provider "aws" {
+  region     = "us-east-1"
+  access_key = "xyz"
+  secret_key = "xyz"
+}
+
+data "aws_security_group" "existing-sg" {
+  id = "sg-07efe7e6161cc3b0b" #change it to the existing id
+}
+
+#ec2 code for the custom public key
+resource "aws_instance" "web" {
+  ami                    = "ami-05ffe3c48a9991133"
+  instance_type          = "t2.micro"
+  availability_zone      = "us-east-1a"
+  key_name               = "new-lti-code"
+  vpc_security_group_ids = [data.aws_security_group.existing-sg.id]
+  tags = {
+    Name = "existing-sg-instane"
+  }
+}
+
+resource "aws_vpc_security_group_ingress_rule" "allow_https" {
+  security_group_id = data.aws_security_group.existing-sg.id
+  cidr_ipv4         = "0.0.0.0/0"
+  from_port         = 443
+  ip_protocol       = "tcp"
+  to_port           = 443
+}
