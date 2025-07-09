@@ -1,0 +1,13 @@
+###Create AWS AMI from AWS INStance
+resource "aws_ami_from_instance" "my-images" {
+  name               = "terra-image"
+  source_instance_id = "i-0660b0a25473b00f5"
+
+  tags = {
+    Name = "Hello-world"
+  }
+}
+terraform init
+terraform fmt
+terraform plan
+terraform apply
