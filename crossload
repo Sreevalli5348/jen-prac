@@ -1,0 +1,11 @@
+Create 4 instances with different availability zones likee 1a, 1b,1c,1d with same security group. Repeat the below steps in all the instances.
+
+yum install httpd -y
+cd /var/www/html
+echo "This is server-3" > index.html
+cd
+systemctl restart httpd
+systemctl enable httpd
+
+Now create a target group and load balancer.
+Take the dns and paste it in the website.
